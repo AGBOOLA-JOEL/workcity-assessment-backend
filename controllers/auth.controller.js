@@ -13,7 +13,7 @@ const generateToken = (userId) => {
 // @access  Public
 const signup = async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    const { email, password, confirmPassword } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -24,11 +24,18 @@ const signup = async (req, res) => {
       });
     }
 
-    // Create new user
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Passwords do not match",
+      });
+    }
+
+    // Create new user (role always 'user')
     const user = await User.create({
       email,
       password,
-      role: role || "user", // Default to 'user' if not specified
     });
 
     // Generate token
@@ -41,7 +48,6 @@ const signup = async (req, res) => {
         user: {
           id: user._id,
           email: user.email,
-          role: user.role,
         },
         token,
       },

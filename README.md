@@ -73,6 +73,8 @@ Create a `.env` file in the root directory:
 # Server Configuration
 PORT=3000
 NODE_ENV=development
+ALLOWED_ORIGINS=add the allowed origin e.g localhost3000
+
 
 # MongoDB Configuration
 MONGODB_URI=mongodb://localhost:27017/workcity-assessment
@@ -223,17 +225,6 @@ workcity-assessment-backend/
 4Set up proper CORS origins
 5vironment-specific variables
 
-### Docker (Optional)
-
-```dockerfile
-FROM node:16lpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-EXPOSE 3000CMD ["npm", "start"]
-```
-
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -243,14 +234,8 @@ EXPOSE 3000CMD ["npm", "start"]
 5. Ensure all tests pass
 6. Submit a pull request
 
-## 📝 License
-
-This project is licensed under the ISC License.
-
 ## 🆘 Support
 
 For support and questions:
 
 - Check the API documentation at `/api-docs`
-- Review the test files for usage examples
-- Open an issue in the repository

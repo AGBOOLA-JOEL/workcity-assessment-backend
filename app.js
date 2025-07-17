@@ -10,8 +10,17 @@ const projectRoutes = require("./routes/project.routes");
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// CORS configuration
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((origin) => origin.trim())
+  : undefined;
+app.use(
+  cors({
+    origin: allowedOrigins || "*",
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

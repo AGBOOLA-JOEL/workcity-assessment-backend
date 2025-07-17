@@ -1,4 +1,32 @@
 const Project = require("../models/project.model");
+const Client = require("../models/client.model");
+
+// Helper to map backend project to frontend interface
+function mapProject(project) {
+  // Map status to frontend values
+  let status = project.status;
+  if (status === "pending") status = "on-hold";
+  if (status === "in progress") status = "active";
+  // 'completed' stays the same
+
+  return {
+    id: project._id.toString(),
+    name: project.title,
+    description: project.description,
+    status,
+    deadline: project.deadline ? project.deadline.toISOString() : undefined,
+    clientId: project.clientId?._id?.toString() || project.clientId?.toString(),
+    client:
+      project.clientId && typeof project.clientId === "object"
+        ? {
+            id: project.clientId._id?.toString() || "",
+            name: project.clientId.name || "",
+            email: project.clientId.email || "",
+          }
+        : undefined,
+    createdAt: project.createdAt.toISOString(),
+  };
+}
 
 // Add a new project
 const addProject = async (req, res, next) => {
@@ -11,7 +39,8 @@ const addProject = async (req, res, next) => {
       deadline,
       clientId,
     });
-    res.status(201).json({ success: true, data: project });
+    await project.populate("clientId");
+    res.status(201).json({ success: true, data: mapProject(project) });
   } catch (error) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ success: false, message: error.message });
@@ -28,7 +57,7 @@ const getProjects = async (req, res, next) => {
       filter.clientId = req.query.clientId;
     }
     const projects = await Project.find(filter).populate("clientId");
-    res.status(200).json({ success: true, data: projects });
+    res.status(200).json({ success: true, data: projects.map(mapProject) });
   } catch (error) {
     next(error);
   }
@@ -43,7 +72,7 @@ const getProjectById = async (req, res, next) => {
         .status(404)
         .json({ success: false, message: "Project not found" });
     }
-    res.status(200).json({ success: true, data: project });
+    res.status(200).json({ success: true, data: mapProject(project) });
   } catch (error) {
     next(error);
   }
@@ -57,13 +86,13 @@ const updateProject = async (req, res, next) => {
       req.params.id,
       { title, description, status, deadline, clientId },
       { new: true, runValidators: true }
-    );
+    ).populate("clientId");
     if (!project) {
       return res
         .status(404)
         .json({ success: false, message: "Project not found" });
     }
-    res.status(200).json({ success: true, data: project });
+    res.status(200).json({ success: true, data: mapProject(project) });
   } catch (error) {
     if (error.name === "ValidationError") {
       return res.status(400).json({ success: false, message: error.message });
